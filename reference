@@ -1,0 +1,51 @@
+Generator
+
+Inputs: 
+ - M  (1 dimension - vert)  : int
+ - N (2nd dimentiosn - hor) : int
+ - free or blocked : eg [[0,1,0], [1,0,1], [1,1,1]] -- 1 == blocked
+                                                    -- 0 == free
+
+
+ Output:
+  - Maze
+        - cells: [[cell1, cell2, cell3], [cell4, cell 5, cell 6], ...]  should match match the dimensions
+        - dimension: 
+        - state
+
+
+    funciton:
+        getCell
+
+ - Cell:
+      - id
+      - free or blocked
+
+
+
+
+    1. A Grid consists of a 2 dimensional array of cells.
+    2. A Cell has 2 states: Blocked or Passage.
+    3. Start with a Grid full of Cells in state Blocked.
+    4. Pick a random Cell, set it to state Passage and Compute its frontier cells. A frontier cell of a Cell is a cell with distance 2 in state Blocked and within the grid.
+    5. While the list of frontier cells is not empty:
+        1. Pick a random frontier cell from the list of frontier cells.
+        2. Let neighbors(frontierCell) = All cells in distance 2 in state Passage. 
+        3. Pick a random neighbor and connect the frontier cell with the neighbor by setting the neighbor & the cell in-between to state Passage. 
+        4. Compute the frontier cells of the chosen frontier cell and add them to the frontier list. 
+        5. Remove the chosen frontier cell from the list of frontier cells.
+
+A frontier cell of a Cell is a cell with distance 2 in state Blocked and within the grid.
+
+All cells are walls.
+Randomly choose a cell B and mark it as free. 
+Add that cell's neighbors to the wall list.
+While the frontier list is not empty:
+    Randomly choose a wall C from the wall list
+    The wall divides two cells, A and B.
+    If either A or B is a wall
+       Let D be whichever of A and B that is the wall
+       Make C free
+       Make D free
+       Add the walls of D to the wall list
+    Remove C from the wall list
