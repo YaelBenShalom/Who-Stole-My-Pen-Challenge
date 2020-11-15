@@ -14,7 +14,7 @@ To run the software, run the code `Hackathon_Challenge.py`. The software records
 - In order to use pre-recorded bagfile, comment line #45 and uncomment line #46.
 
 Pen recognition:
-![Tast_1](https://github.com/YaelBenShalom/Who-Stole-My-Pen-Challenge/blob/master/videos/pen-srecognition.gif)
+![Pen recognition](https://github.com/YaelBenShalom/Who-Stole-My-Pen-Challenge/blob/master/videos/pen-recognition.gif)
 
 Pen stealing:
-![Tast_2](https://github.com/YaelBenShalom/Who-Stole-My-Pen-Challenge/blob/master/videos/pen-stealing.gif)
+![Pen stealing](https://github.com/YaelBenShalom/Who-Stole-My-Pen-Challenge/blob/master/videos/pen-stealing.gif)
