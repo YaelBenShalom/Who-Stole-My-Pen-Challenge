@@ -2,7 +2,7 @@
 GitHub repository - https://github.com/YaelBenShalom/Who-Stole-My-Pen-Challenge
 
 ## Overview
-In This project I used computer vision and motion planning to control a robotic arm to "steal" a pen for my hand and throw it on the floor.
+In This project, I used computer vision and motion planning to control a robotic arm to "steal" a pen from my hand and throw it on the floor.
 This project contains 2 parts:
 1. A computer vision algorithm for recognizing the 3D location of a purple pen, using a D435i depth-camera. The software recognize the pen by its color, and locate its coordinate using the 3D camera.
 2. Controlling a PincherX robotic arm to accurately seize the pen under varying conditions, and throw it on the floor.
