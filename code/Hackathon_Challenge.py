@@ -6,7 +6,6 @@ import math
 import time
 import rospy
 import threading
-import modern_robotics as mr
 
 from std_msgs.msg import Float64
 from sensor_msgs.msg import JointState
@@ -27,12 +26,13 @@ from interbotix_sdk.robot_manipulation import InterbotixRobot
 # Create a pipeline
 pipeline = rs.pipeline()
 
-#Create a config and configure the pipeline to stream
+# Create a config and configure the pipeline to stream
 #  different resolutions of color and depth streams
 config = rs.config()
 config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
 config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
-config.enable_record_to_file("camera_video") # Comment this line to use pre-recorded video
+# Comment this line to use pre-recorded video
+config.enable_record_to_file("camera_video")
 # config.enable_device_from_file("camera_video") # Uncomment this line to use pre-recorded video
 
 # Start streaming
@@ -44,7 +44,7 @@ depth_scale = depth_sensor.get_depth_scale()
 
 # We will be removing the background of objects more than
 #  clipping_distance_in_meters meters away
-clipping_distance_in_meters = 1 #1 meter
+clipping_distance_in_meters = 1  # 1 meter
 clipping_distance = clipping_distance_in_meters / depth_scale
 
 # Create an align object
@@ -56,27 +56,28 @@ align = rs.align(align_to)
 
 looking_for_pen = True
 
+
 def convert_to_cyl(position):
     x = -position[0] - 0.30  # distance of base from camera - x axis
     y = -position[1]
-    z = position[2] - 0.17 # distance of base from camera - z axis
+    z = position[2] - 0.17  # distance of base from camera - z axis
     r = math.sqrt(x**2 + z**2)
-    theta = math.atan2(x, -z) #- math.pi/2
+    theta = math.atan2(x, -z)  # - math.pi/2
     return (r, theta, y)
 
 
 def move_to_position(position):
-    arm = InterbotixRobot(robot_name = "px100", mrd = mrd)
+    arm = InterbotixRobot(robot_name="px100", mrd=mrd)
     arm.go_to_home_pose()
-    arm_position = (0.0,0.0)
+    arm_position = (0.0, 0.0)
     arm.open_gripper(2.0)
-    arm.set_ee_pose_components(x = position[0],z = position[2], blocking = True)
-    arm.set_ee_cartesian_trajectory(x = -0.05)
-    arm.set_single_joint_position("waist", position[1], blocking = True)
-    arm.set_ee_cartesian_trajectory(x = +0.05)
+    arm.set_ee_pose_components(x=position[0], z=position[2], blocking=True)
+    arm.set_ee_cartesian_trajectory(x=-0.05)
+    arm.set_single_joint_position("waist", position[1], blocking=True)
+    arm.set_ee_cartesian_trajectory(x=+0.05)
 
     arm.close_gripper(2.0)
-    arm.set_ee_cartesian_trajectory(x = -0.05)
+    arm.set_ee_cartesian_trajectory(x=-0.05)
     arm.go_to_home_pose()
     arm.open_gripper(2.0)
     arm.go_to_sleep_pose()
@@ -92,12 +93,12 @@ try:
         cfg = profile.get_stream(rs.stream.color)
         intrinsics = cfg.as_video_stream_profile().get_intrinsics()
 
-
         # Align the depth frame to color frame
         aligned_frames = align.process(frames)
 
         # Get aligned frames
-        aligned_depth_frame = aligned_frames.get_depth_frame() # aligned_depth_frame is a 640x480 depth image
+        # aligned_depth_frame is a 640x480 depth image
+        aligned_depth_frame = aligned_frames.get_depth_frame()
         aligned_color_frame = aligned_frames.get_color_frame()
 
         depth_intrin = aligned_depth_frame.profile.as_video_stream_profile().intrinsics
@@ -112,12 +113,14 @@ try:
 
         # Remove background - Set pixels further than clipping_distance to grey
         grey_color = 153
-        depth_image_3d = np.dstack((depth_image,depth_image,depth_image)) #depth image is 1 channel, color is 3 channels
-        bg_removed = np.where((depth_image_3d > clipping_distance) | (depth_image_3d <= 0), grey_color, color_image)
+        # depth image is 1 channel, color is 3 channels
+        depth_image_3d = np.dstack((depth_image, depth_image, depth_image))
+        bg_removed = np.where((depth_image_3d > clipping_distance) | (
+            depth_image_3d <= 0), grey_color, color_image)
 
         # Convert between color spaces
         convert_to_hsv = cv2.cvtColor(bg_removed, cv2.COLOR_BGR2HSV)
-        
+
         # define range of purple color in HSV
         lower_purple = np.array([110, 50, 50])
         upper_purple = np.array([130, 255, 255])
@@ -126,12 +129,13 @@ try:
 
         # Threshold the HSV image to get only purple colors
         mask_image = cv2.inRange(convert_to_hsv, lower_purple, upper_purple)
-        mask_image_blur = cv2.GaussianBlur(mask_image,(5, 5), 0)
+        mask_image_blur = cv2.GaussianBlur(mask_image, (5, 5), 0)
         # mask_image_bitwise = cv2.bitwise_and(mask_image_blur, mask_image_blur, mask = mask_image_blur) #TODO
-        contours, hierarchy = cv2.findContours(mask_image_blur, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        contours_b, hierarchy = cv2.findContours(mask_image_blur, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        contours, hierarchy = cv2.findContours(
+            mask_image_blur, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        contours_b, hierarchy = cv2.findContours(
+            mask_image_blur, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-        #TODO
         index = -1
         curr_area = -1
         for a in range(len(contours)):
@@ -148,20 +152,22 @@ try:
             px = int(M['m10'] / M['m00'])
             py = int(M['m01'] / M['m00'])
             depth_pixel = [px, py]
-            position = rs.rs2_deproject_pixel_to_point(depth_intrin, depth_pixel, depth_image[py][px] * depth_scale)
+            position = rs.rs2_deproject_pixel_to_point(
+                depth_intrin, depth_pixel, depth_image[py][px] * depth_scale)
             print("position", position)
             move_to_position(convert_to_cyl(position))
             # print("depth pixel", depth_pixel)
             # print("X: ", position[0],  "Y: ", position[1],"Z: ", position[2])
             looking_for_pen = False
 
-        depth = bg_removed[320,240].astype(float)
+        depth = bg_removed[320, 240].astype(float)
         distance = depth * depth_scale
         # print("Distance (m): ", distance )
         # print("depth_image_3d (m): ", depth_image_3d )
 
         # Render images
-        depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
+        depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(
+            depth_image, alpha=0.03), cv2.COLORMAP_JET)
         images = np.hstack((bg_removed, depth_colormap))
         cv2.namedWindow('Align Example', cv2.WINDOW_AUTOSIZE)
         cv2.imshow('Align Example', images)
@@ -187,4 +193,3 @@ finally:
 #     res = cv2.bitwise_and(img, img, mask=mask)
 
 #     return res
-
